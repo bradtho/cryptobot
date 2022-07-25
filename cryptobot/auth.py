@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from urllib.error import HTTPError
+from logs import Logs as Logs
 import requests
 
 class Auth:
@@ -9,6 +10,7 @@ class Auth:
         self.headers = { 'Content-Type': 'application/json' }
         self.values = secret
         self.session = requests.Session()
+        self.log = Logs.setupLogging("auth")
 
     def getJWT(self):
         try:
@@ -16,12 +18,13 @@ class Auth:
             headers = self.headers
             values = self.values
             r = self.session.post(url, data=values, headers=headers)
+            log = self.log
             jwt = r.json()['accessToken']
             return jwt
 
         except HTTPError as http_err:
-            print(f'HTTP error occurred: {http_err}')
-            print(f'{http_err.response.text}')
+            log.error(f'HTTP error occurred: {http_err}')
+            log.error(f'{http_err.response.text}')
         except Exception as err:
-            print(f'Other error occurred: {err}')
-            print(f'{err.response.text}')
+            log.exception(f'Other error occurred: {err}')
+            log.exception(f'{err.response.text}')
